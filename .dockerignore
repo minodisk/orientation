@@ -1,0 +1,7 @@
+# Vendoring
+*.lock
+*.toml
+
+# Credential
+*.aes
+*.env
