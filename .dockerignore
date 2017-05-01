@@ -1,6 +1,5 @@
 # Vendoring
-*.lock
-*.toml
+vendor
 
 # Credential
 *.aes
