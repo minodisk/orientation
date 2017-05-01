@@ -26,7 +26,7 @@ var (
 )
 
 // Apply reflects the image's EXIF orientation tag on the image pixels.
-// If the image can't be decoded, it returns nil and an error.
+// If the image can not be decoded, it returns nil and an error.
 // If an error occurs during subsequent processing,
 // it returns the decoded image and an error.
 func Apply(r io.Reader) (image.Image, error) {
@@ -56,14 +56,14 @@ func Decode(r io.Reader) (image.Image, error) {
 		return nil, &DecodeError{err}
 	}
 	if format != "jpeg" {
-		return img, &FormatError{errors.New("format isn't jpeg")}
+		return img, &FormatError{errors.New("format is not jpeg")}
 	}
 	return img, nil
 }
 
 // Tag decodes the orientation tag from the image EXIF and returns it.
-// If the EXIF can't be decoded, the orientation tag doesn't exist,
-// or the orientation tag isn't int, it returns TagError.
+// If the EXIF can not be decoded, the orientation tag does not exist,
+// or the orientation tag is not int, it returns TagError.
 func Tag(r io.Reader) (int, error) {
 	e, err := exif.Decode(r)
 	if err != nil {
@@ -71,17 +71,17 @@ func Tag(r io.Reader) (int, error) {
 	}
 	tag, err := e.Get(exif.Orientation)
 	if err != nil {
-		return 0, &TagError{errors.Wrap(err, "orientation tag doesn't exist in EXIF")}
+		return 0, &TagError{errors.Wrap(err, "orientation tag does not exist in EXIF")}
 	}
 	o, err := tag.Int(0)
 	if err != nil {
-		return 0, &TagError{errors.Wrap(err, "orientation tag isn't int")}
+		return 0, &TagError{errors.Wrap(err, "orientation tag is not int")}
 	}
 	return o, nil
 }
 
 // Orient reflects the rotation indicated by the tag in the img.
-// For unknown tags, returns OrientError.
+// If the specified orientation tag is unknown, returns OrientError.
 func Orient(img image.Image, tag int) (image.Image, error) {
 	fn, ok := tagOrientMapper[tag]
 	if !ok {
@@ -91,6 +91,7 @@ func Orient(img image.Image, tag int) (image.Image, error) {
 }
 
 // Orient1 returns s.
+// Process like this:
 // 	111    111
 // 	100    100
 // 	110 -> 110
@@ -101,6 +102,7 @@ func Orient1(s image.Image) image.Image {
 }
 
 // Orient2 returns a new image in which the right side replaced by the left side.
+// Process like this:
 // 	111    111
 // 	001    100
 // 	011 -> 110
@@ -122,6 +124,7 @@ func Orient2(s image.Image) image.Image {
 
 // Orient3 returns a new image in which the bottom side is replaced by the upper
 // side and the right side replaced by the left side.
+// Process like this:
 // 	001    111
 // 	001    100
 // 	011 -> 110
@@ -143,6 +146,7 @@ func Orient3(s image.Image) image.Image {
 
 // Orient4 returns a new image in which the bottom side is replaced by the upper
 // side.
+// Process like this:
 // 	100    111
 // 	100    100
 // 	110 -> 110
@@ -163,7 +167,8 @@ func Orient4(s image.Image) image.Image {
 }
 
 // Orient5 returns a new image in which the left side is replaced by the upper
-// side and the upper side is replaced by the left side
+// side and the upper side is replaced by the left side.
+// Process like this:
 // 	         111
 // 	11111    100
 // 	10100 -> 110
@@ -184,7 +189,8 @@ func Orient5(s image.Image) image.Image {
 }
 
 // Orient6 returns a new image in which the left side is replaced by the upper
-// side and the bottom side is replaced by the left side
+// side and the bottom side is replaced by the left side.
+// Process like this:
 // 	         111
 // 	10000    100
 // 	10100 -> 110
@@ -205,7 +211,8 @@ func Orient6(s image.Image) image.Image {
 }
 
 // Orient7 returns a new image in which the right side is replaced by the upper
-// side and the bottom side is replaced by the left side
+// side and the bottom side is replaced by the left side.
+// Process like this:
 // 	         111
 // 	00001    100
 // 	00101 -> 110
@@ -226,7 +233,8 @@ func Orient7(s image.Image) image.Image {
 }
 
 // Orient8 returns a new image in which the right side is replaced by the upper
-// side and the upper side is replaced by the left side
+// side and the upper side is replaced by the left side.
+// Process like this:
 // 	         111
 // 	11111    100
 // 	00101 -> 110
