@@ -2,6 +2,12 @@
 
 Apply EXIF Orientation tag to the pixels of a image.
 
+## Installation
+
+```sh
+go get github.com/minodisk/orientation
+```
+
 ## Usage
 
 ### When processing various formats (Recommended):
@@ -65,10 +71,4 @@ func main() {
 	}
 	fmt.Println(visualize(img))
 }
-```
-
-### Installation
-
-```sh
-go get github.com/minodisk/orientation
 ```
