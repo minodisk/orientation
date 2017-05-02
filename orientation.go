@@ -53,7 +53,7 @@ func Decode(r io.Reader) (image.Image, error) {
 		return nil, &DecodeError{err}
 	}
 	if format != "jpeg" {
-		return img, &FormatError{errors.New("format is not jpeg")}
+		return img, &FormatError{errors.Errorf("format got %s, want jpeg", format)}
 	}
 	return img, nil
 }
@@ -82,7 +82,7 @@ func Tag(r io.Reader) (int, error) {
 func Orient(img image.Image, tag int) (image.Image, error) {
 	fn, ok := tagOrientMapper[tag]
 	if !ok {
-		return nil, &OrientError{errors.Errorf("invalid orientation tag %d", tag)}
+		return nil, &OrientError{errors.Errorf("orientation tag got %d, want 1 to 8", tag)}
 	}
 	return fn(img), nil
 }

@@ -9,6 +9,7 @@ import (
 	_ "image/png"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/minodisk/orientation"
@@ -137,6 +138,152 @@ func TestApply(t *testing.T) {
 						}
 					})
 				}
+			}
+		})
+	}
+}
+
+func TestApplyError(t *testing.T) {
+	for _, c := range []struct {
+		name string
+		file string
+		want string
+	}{
+		// DecodeError
+		{
+			"non-image file",
+			"fixtures/non-image.txt",
+			"image: unknown format",
+		},
+		// FormatError
+		{
+			"non-jpeg file",
+			"fixtures/f-png24.png",
+			"format got png, want jpeg",
+		},
+		// TagError
+		{
+			"without orientation tag",
+			"fixtures/f.jpg",
+			"orientation tag does not exist in EXIF: exif: tag \"Orientation\" is not present",
+		},
+		// OrientError
+		{
+			"invalid orientation tag",
+			"fixtures/f-outofrange.jpg",
+			"orientation tag got 9, want 1 to 8",
+		},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			file, err := os.Open(c.file)
+			if err != nil {
+				t.Fatal(err)
+			}
+			_, err = orientation.Apply(file)
+			if err == nil {
+				t.Fatal("error does not occur")
+			}
+			if got := err.Error(); got != c.want {
+				t.Errorf("Error() got '%s', want '%s'", got, c.want)
+			}
+		})
+	}
+}
+
+func TestDecodeError(t *testing.T) {
+	t.Run("DecodeError", func(t *testing.T) {
+		for _, c := range []struct {
+			name string
+			file string
+			want string
+		}{
+			{
+				"non-image file",
+				"fixtures/non-image.txt",
+				"image: unknown format",
+			},
+		} {
+			t.Run(c.name, func(t *testing.T) {
+				file, err := os.Open(c.file)
+				if err != nil {
+					t.Fatal(err)
+				}
+				_, err = orientation.Decode(file)
+				if err == nil {
+					t.Fatal("error does not occur")
+				}
+				if e, ok := err.(*orientation.DecodeError); !ok {
+					t.Errorf("type got %T, want *orientation.DecodeError", e)
+				}
+				if got := err.Error(); got != c.want {
+					t.Errorf("Error() got '%s', want '%s'", got, c.want)
+				}
+			})
+		}
+	})
+	t.Run("FormatError", func(t *testing.T) {
+		for _, c := range []struct {
+			name string
+			file string
+			want string
+		}{
+			{
+				"non-jpeg file",
+				"fixtures/f-png24.png",
+				"format got png, want jpeg",
+			},
+		} {
+			t.Run(c.name, func(t *testing.T) {
+				file, err := os.Open(c.file)
+				if err != nil {
+					t.Fatal(err)
+				}
+				_, err = orientation.Decode(file)
+				if err == nil {
+					t.Fatal("error does not occur")
+				}
+				if e, ok := err.(*orientation.FormatError); !ok {
+					t.Errorf("type got %T, want *orientation.FormatError", e)
+				}
+				if got := err.Error(); got != c.want {
+					t.Errorf("Error() got '%s', want '%s'", got, c.want)
+				}
+			})
+		}
+	})
+}
+
+func TestTagError(t *testing.T) {
+	for _, c := range []struct {
+		name string
+		file string
+		want string
+	}{
+		{
+			"without EXIF",
+			"fixtures/f-png24.png",
+			"fail to decode EXIF",
+		},
+		{
+			"without orientation tag",
+			"fixtures/f.jpg",
+			"orientation tag does not exist in EXIF",
+		},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			file, err := os.Open(c.file)
+			if err != nil {
+				t.Fatal(err)
+			}
+			_, err = orientation.Tag(file)
+			if err == nil {
+				t.Fatal("error does not occur")
+			}
+			if e, ok := err.(*orientation.TagError); !ok {
+				t.Errorf("type got %T, want *orientation.TagError", e)
+			}
+			if strings.Index(err.Error(), c.want) != 0 {
+				t.Errorf("Error() got %s, want %s", err.Error(), c.want)
 			}
 		})
 	}
