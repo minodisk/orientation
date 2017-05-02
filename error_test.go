@@ -41,9 +41,16 @@ func TestError(t *testing.T) {
 				t.Fatal("%s does not implements causer", c.name)
 			}
 			got := err.Cause()
-			if got != want {
-				t.Errorf("got %v, want %v", got, want)
-			}
+			t.Run("Cause()", func(t *testing.T) {
+				if got != want {
+					t.Errorf("got %v, want %v", got, want)
+				}
+			})
+			t.Run("Error()", func(t *testing.T) {
+				if got.Error() != want.Error() {
+					t.Errorf("got %s, want %s", got.Error(), want.Error())
+				}
+			})
 		})
 	}
 }
